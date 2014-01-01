@@ -2,10 +2,10 @@
 #define SpeedFast 50 // Depends on how narrow the curves are, the narrower, the quicker
 #define tolerance 40 // Value of the brightest spot on the line + some security margin (+5 is feasible)
 #define followSide false // True to follow right side of the line, false for left side
+#define distance 20 // Desired distance to wall while following it
 
 int iLight = 0;
-int iSound = 0;
-bool bUnclapped = true;
+int iDistance = 0;
 long lLastSeen = 0;
 
 void followLine() {
@@ -33,22 +33,19 @@ void followLine() {
      }
 }
 
-task main() {
-     SetSensorLight(IN_2);
-     SetSensorSound(IN_4);
-     
+void Liner() {
+     bool bWalled = false;
      lLastSeen = CurrentTick();
-     
-     while (bUnclapped) {
+
+     while (!bWalled) {
            iLight = Sensor(IN_2);
-           iSound = Sensor(IN_4);
-           
-           if (iSound > 30 ) {
-              bUnclapped = false;
+           iDistance = SensorUS(IN_4);
+
+           if (iDistance < 20 ) {
+              bWalled = true;
            }
-           
+
            if (CurrentTick() - lLastSeen > 250) {
-              Off(OUT_A);
               while (iLight > tolerance) {
                     if (followSide) { // When following right side, turn right
                        OnFwdSync(OUT_AB, 50, 100);
@@ -58,11 +55,56 @@ task main() {
                     }
                     iLight = Sensor(IN_2);
               }
-              OffEx(OUT_AB, RESET_ALL);
+              Off(OUT_AB);
               lLastSeen = CurrentTick();
            }
            else {
                 followLine();
            }
      }
+}
+
+void Waller() {
+     bool bEnd = false;
+     
+     while (!bEnd) {
+           iDistance = SensorUS(IN_4);
+           if (iDistance < distance) { // Go left if too close
+              OnFwd(OUT_A, SpeedFast);
+              OnFwd(OUT_B, SpeedSlow);
+              Wait(500);
+              lLastSeen = CurrentTick();
+           }
+           else { // Go right if too far away
+                OnFwd(OUT_B, SpeedFast);
+                OnFwd(OUT_A, SpeedSlow);
+                if (CurrentTick() - lLastSeen > 2000) {
+                   bEnd = true;
+                }
+           }
+     }
+}
+
+task main() {
+     SetSensorLight(IN_2);
+     SetSensorLowspeed(IN_4);
+     
+     Liner();
+     
+     PlayTone(2000, 300);
+     Wait(300);
+     
+     Waller();
+     
+     Off(OUT_AB);
+     
+     PlayTone(2000, 300);
+     Wait(300);
+     
+     OnFwdSync(OUT_AB, 100, 0);
+     Wait(500);
+     Off(OUT_AB);
+     
+     PlayTone(500, 800);
+     Wait(800);
 }

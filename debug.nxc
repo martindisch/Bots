@@ -1,0 +1,10 @@
+task main() {
+     int iDistance;
+     SetSensorLowspeed(IN_4);
+     iDistance = SensorUS(IN_4);
+     while (true) {
+           TextOut(5, LCD_LINE1, "Distanz: " + NumToStr(SensorUS(IN_4)));
+           Wait(500);
+     }
+}
+
