@@ -1,0 +1,68 @@
+#define SpeedSlow 10
+#define SpeedFast 50 // Depends on how narrow the curves are, the narrower, the quicker
+#define tolerance 40 // Value of the brightest spot on the line + some security margin (+5 is feasible)
+#define followSide false // True to follow right side of the line, false for left side
+
+int iLight = 0;
+int iSound = 0;
+bool bUnclapped = true;
+long lLastSeen = 0;
+
+void followLine() {
+     if (followSide) {
+        if (iLight > tolerance) { // If not on the line go left
+           OnFwd(OUT_A, SpeedFast);
+           OnFwd(OUT_B, SpeedSlow);
+        }
+        else {
+             OnFwd(OUT_B, SpeedFast); // If on the line go right
+             OnFwd(OUT_A, SpeedSlow);
+             lLastSeen = CurrentTick();
+        }
+     }
+     else {
+          if (iLight > tolerance) { // If not on the line go right
+             OnFwd(OUT_A, SpeedSlow);
+             OnFwd(OUT_B, SpeedFast);
+          }
+          else {
+               OnFwd(OUT_B, SpeedSlow); // If on the line go left
+               OnFwd(OUT_A, SpeedFast);
+               lLastSeen = CurrentTick();
+          }
+     }
+}
+
+task main() {
+     SetSensorLight(IN_2);
+     SetSensorSound(IN_4);
+     
+     lLastSeen = CurrentTick();
+     
+     while (bUnclapped) {
+           iLight = Sensor(IN_2);
+           iSound = Sensor(IN_4);
+           
+           if (iSound > 30 ) {
+              bUnclapped = false;
+           }
+           
+           if (CurrentTick() - lLastSeen > 250) {
+              Off(OUT_A);
+              while (iLight > tolerance) {
+                    if (followSide) { // When following right side, turn right
+                       OnFwdSync(OUT_AB, 50, 100);
+                    }
+                    else { // When following left side, turn left
+                         OnFwdSync(OUT_AB, 50, -100);
+                    }
+                    iLight = Sensor(IN_2);
+              }
+              OffEx(OUT_AB, RESET_ALL);
+              lLastSeen = CurrentTick();
+           }
+           else {
+                followLine();
+           }
+     }
+}

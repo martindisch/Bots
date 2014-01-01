@@ -1,0 +1,53 @@
+#define SpeedSlow 25
+#define SpeedFast 50 // Depends on how narrow the curves are, the narrower, the quicker
+#define tolerance 40 // Value of the line + some security margin
+                     // 35 for rubber band
+                     // 40 for paper print
+
+task main() {
+     int iLight;
+     int iSound;
+     bool bUnclapped = true;
+     long lLastSeen = CurrentTick();
+     bool bLeftCurve = true;
+     
+     SetSensorLight(IN_2);
+     SetSensorSound(IN_4);
+     
+     while (bUnclapped) {
+           iLight = Sensor(IN_2);
+           iSound = Sensor(IN_4);
+           
+           if (iSound > 30 ) {
+              bUnclapped = false;
+           }
+           
+           if (CurrentTick() - lLastSeen > 3000) {
+              bLeftCurve = !bLeftCurve;
+              lLastSeen = CurrentTick() + 500;
+           }
+           
+           if (bLeftCurve) {
+              if (iLight > tolerance) { // If not on the line go left
+                 OnFwd(OUT_A, SpeedFast);
+                 OnFwd(OUT_B, SpeedSlow);
+              }
+              else {
+                   lLastSeen = CurrentTick();
+                   OnFwd(OUT_B, SpeedFast); // If on the line go right
+                   OnFwd(OUT_A, SpeedSlow);
+              }
+           }
+           else {
+                if (iLight > tolerance) { // If not on the line go right
+                   OnFwd(OUT_A, SpeedSlow);
+                   OnFwd(OUT_B, SpeedFast);
+                }
+                else {
+                     lLastSeen = CurrentTick();
+                     OnFwd(OUT_B, SpeedSlow); // If on the line go left
+                     OnFwd(OUT_A, SpeedFast);
+                }
+           }
+     }
+}
