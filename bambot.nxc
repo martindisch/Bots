@@ -87,7 +87,7 @@ void Waller() {
               PlayTone(2000, 300);
               Wait(300);
               
-              OnFwd(OUT_AB, SpeedFastWall);
+              OnFwdSync(OUT_AB, SpeedFastWall, 0);
               Wait(2000);
               
               OnFwdSync(OUT_AB, 50, 50);

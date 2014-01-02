@@ -1,11 +1,3 @@
 task main() {
-     SetSensorTouch(IN_1);
-     OnFwd(OUT_AB, 50);
-     int iStart = CurrentTick();
-     until (Sensor(IN_1) != 0);
-     int iRuntime = CurrentTick() - iStart;
-     Off(OUT_AB);
-     OnRevSync(OUT_AB, 50, 0);
-     Wait(iRuntime);
-     Off(OUT_AB);
+     RotateMotorEx(OUT_AB, 50, 360, 100, true, true);
 }
