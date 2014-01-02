@@ -1,0 +1,44 @@
+#define tolerance 40
+#define interval 800
+#define searchtimeshort 800
+#define searchtimelong 1500
+
+long lStart;
+
+bool onLine() {
+     return (Sensor(IN_2) < tolerance)
+}
+
+void align(int iSearchtime) {
+     lStart = CurrentTick();
+     OnFwdSync(OUT_AB, 50, 100);
+     until (onLine() || CurrentTick() - lStart > iSearchtime);
+     Off(OUT_AB);
+     if (!onLine()) {
+        lStart = CurrentTick();
+        OnFwdSync(OUT_AB, 50, -100);
+        until (onLine() || CurrentTick() - lStart > (iSearchtime * 2));
+        Off(OUT_AB);
+     }
+}
+
+task main() {
+     bool bOnCourse = true;
+     SetSensorLight(IN_2);
+     while (bOnCourse) {
+           OnFwdSync(OUT_AB, 50, 0);
+           Wait(interval);
+           Off(OUT_AB);
+           align(searchtimeshort);
+           if (!onLine()) {
+              OnFwdSync(OUT_AB, 50, 100);
+              Wait(searchtimeshort);
+              align(searchtimelong);
+           }
+           if (!onLine()) {
+              bOnCourse = false;
+           }
+     }
+     PlayTone(500, 800);
+     Wait(800);
+}
