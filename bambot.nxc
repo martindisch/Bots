@@ -93,7 +93,7 @@ void Waller() {
               OnFwdSync(OUT_AB, 50, 50);
               Wait(500);
               
-              OnFwdSync(OUT_AB, SpeedFastWall, 0);
+              OnFwdSync(OUT_AB, SpeedFastWall, 10);
               until (SensorUS(IN_4) < distance || Sensor(IN_1) != 0);
               
               Off(OUT_AB);
