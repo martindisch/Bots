@@ -1,8 +1,13 @@
+// Line following constants
 #define SpeedSlow 10
 #define SpeedFast 50 // Depends on how narrow the curves are, the narrower, the quicker
 #define tolerance 40 // Value of the brightest spot on the line + some security margin (+5 is feasible)
 #define followSide false // True to follow right side of the line, false for left side
-#define distance 20 // Desired distance to wall while following it
+#define timeTillTurn 500 // Time not on line until making a full turn
+// Wall following constants
+#define distance 30 // Desired distance to wall while following it
+#define SpeedSlowWall 10
+#define SpeedFastWall 50
 
 int iLight = 0;
 int iDistance = 0;
@@ -41,11 +46,11 @@ void Liner() {
            iLight = Sensor(IN_2);
            iDistance = SensorUS(IN_4);
 
-           if (iDistance < 20 ) {
+           if (iDistance < distance ) {
               bWalled = true;
            }
 
-           if (CurrentTick() - lLastSeen > 250) {
+           if (CurrentTick() - lLastSeen > timeTillTurn) {
               while (iLight > tolerance) {
                     if (followSide) { // When following right side, turn right
                        OnFwdSync(OUT_AB, 50, 100);
@@ -66,21 +71,32 @@ void Liner() {
 
 void Waller() {
      bool bEnd = false;
+     lLastSeen = CurrentTick();
      
-     while (!bEnd) {
-           iDistance = SensorUS(IN_4);
-           if (iDistance < distance) { // Go left if too close
-              OnFwd(OUT_A, SpeedFast);
-              OnFwd(OUT_B, SpeedSlow);
-              Wait(500);
-              lLastSeen = CurrentTick();
-           }
-           else { // Go right if too far away
-                OnFwd(OUT_B, SpeedFast);
-                OnFwd(OUT_A, SpeedSlow);
-                if (CurrentTick() - lLastSeen > 2000) {
-                   bEnd = true;
-                }
+     while (Sensor(IN_1) == 0) {
+           // Go left if too close
+           OnFwd(OUT_A, SpeedFastWall);
+           OnFwd(OUT_B, SpeedSlowWall);
+           until (SensorUS(IN_4) > distance || Sensor(IN_1) != 0);
+           lLastSeen = CurrentTick();
+           // Go right if too far away
+           OnFwd(OUT_B, SpeedFastWall);
+           OnFwd(OUT_A, SpeedSlowWall);
+           until (SensorUS(IN_4) < distance || CurrentTick() - lLastSeen > 500 || Sensor(IN_1) != 0);
+           if (CurrentTick() - lLastSeen > 500) {
+              PlayTone(2000, 300);
+              Wait(300);
+              
+              OnFwd(OUT_AB, SpeedFastWall);
+              Wait(2000);
+              
+              OnFwdSync(OUT_AB, 50, 50);
+              Wait(300);
+              
+              OnFwd(OUT_AB, SpeedFastWall);
+              until (SensorUS(IN_4) < distance || Sensor(IN_1) != 0);
+              
+              Off(OUT_AB);
            }
      }
 }
@@ -88,6 +104,7 @@ void Waller() {
 task main() {
      SetSensorLight(IN_2);
      SetSensorLowspeed(IN_4);
+     SetSensorTouch(IN_1);
      
      Liner();
      
@@ -96,13 +113,6 @@ task main() {
      
      Waller();
      
-     Off(OUT_AB);
-     
-     PlayTone(2000, 300);
-     Wait(300);
-     
-     OnFwdSync(OUT_AB, 100, 0);
-     Wait(500);
      Off(OUT_AB);
      
      PlayTone(500, 800);

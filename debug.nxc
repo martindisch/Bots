@@ -1,10 +1,11 @@
 task main() {
-     int iDistance;
-     SetSensorLowspeed(IN_4);
-     iDistance = SensorUS(IN_4);
-     while (true) {
-           TextOut(5, LCD_LINE1, "Distanz: " + NumToStr(SensorUS(IN_4)));
-           Wait(500);
-     }
+     SetSensorTouch(IN_1);
+     OnFwd(OUT_AB, 50);
+     int iStart = CurrentTick();
+     until (Sensor(IN_1) != 0);
+     int iRuntime = CurrentTick() - iStart;
+     Off(OUT_AB);
+     OnRevSync(OUT_AB, 50, 0);
+     Wait(iRuntime);
+     Off(OUT_AB);
 }
-
