@@ -1,4 +1,4 @@
-Bambot
+Bots
 ======
 
-Some robot written in NXC
+Some bots written in NXC
