@@ -99,7 +99,7 @@ void Liner() {
      }
 }
 
-// Subrouting for following the wall
+// Subroutine for following the wall
 void followWall() {
      // Go left if too close to wall
      OnFwd(OUT_A, SpeedFastWall);
@@ -116,6 +116,10 @@ void followWall() {
 // Wall follower
 void Waller() {
 
+     // Make sure we're not too close to the wall
+     OnFwdSync(OUT_AB, SpeedFastWall, -30);
+     Wait(500);
+     
      // Initialize variables
      lLastSeen = CurrentTick();
      long timeToEnd = 2147483647; // Max value for a long, to make sure we don't exit prematurely
