@@ -1,7 +1,7 @@
 // Line following constants
 #define SpeedSlow 10 // Speed of slower wheel in turn
 #define SpeedFast 50 // Speed of faster wheel in turn
-#define tolerance 40 // Value of the brightest spot on the line + some security margin (+5 is feasible)
+#define tolerance 40 // Value of the brightest spot on the line + some security margin (+5 is appropriate)
 #define followSide false // True to follow right side of the line, false for left side
 #define timeTillTurn 500 // Time not on line until making a full turn
 
@@ -14,7 +14,7 @@
 #define timeTurn 500 // Time to turn right after going straight
 
 // General constants
-#define waitPic 1000 // Time to show motionless face
+#define waitPic 1000 // Time to show closed face before starting and exiting program
 #define animInterval 250 // Speed of the animation
 
 int iLight = 0;
@@ -74,7 +74,8 @@ void Liner() {
 
            if (CurrentTick() - lLastSeen > timeTillTurn) { // If we haven't seen the line in a while,
                                                            // we've most likely run into a dead end
-              while (iLight > tolerance) {
+                                                           
+              while (iLight > tolerance) { // Turn until we see the line again
               
                     if (followSide) { // When following right side, turn hard right
                        OnFwdSync(OUT_AB, 50, 100);
@@ -103,15 +104,15 @@ void Waller() {
      // Initialize variables
      lLastSeen = CurrentTick();
      
-     while (Sensor(IN_1) == 0) { // Execute if touch hasn't been activated
+     while (Sensor(IN_1) == 0) { // Execute for as long as touch hasn't been activated
      
-           // Go left if too close
+           // Go left if too close to wall
            OnFwd(OUT_A, SpeedFastWall);
            OnFwd(OUT_B, SpeedSlowWall);
            until (SensorUS(IN_4) > distance || Sensor(IN_1) != 0);
            lLastSeen = CurrentTick(); // Remember last time we've seen the line
            
-           // Go right if too far away
+           // Go right if too far away from wall
            OnFwd(OUT_B, SpeedFastWall);
            OnFwd(OUT_A, SpeedSlowWall);
            until (SensorUS(IN_4) < distance || CurrentTick() - lLastSeen > timeTillTurnWall || Sensor(IN_1) != 0);
@@ -137,7 +138,7 @@ void Waller() {
      }
 }
 
-//
+// Animation task
 task anim() {
      // Show open and closed face in short succession
      while (bAnim) {
@@ -157,13 +158,13 @@ task controller() {
      // When done, play sound and
      PlaySound(SOUND_DOUBLE_BEEP);
 
-     // Start wall following
+     // start wall following
      Waller();
 
      // When done, stop motors immediately and
      Off(OUT_AB);
      
-     // stop the animation and display motionless face
+     // stop the animation and display closed face
      bAnim = false;
      GraphicOut(28, LCD_LINE7, "faceclosed.ric");
      
@@ -181,7 +182,7 @@ task controller() {
 // Main entry point to initialize sensors and start necessary tasks
 task main() {
 
-     // Make start sound and display motionless face for a short time
+     // Make start sound and display closed face for a short time
      PlaySound(SOUND_UP);
      GraphicOut(28, LCD_LINE7, "faceclosed.ric");
      Wait(waitPic);
