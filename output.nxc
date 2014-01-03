@@ -1,0 +1,15 @@
+// Display width: 100
+// Display height: 64
+
+task main() {
+     // Centered nicely
+     PlaySound(SOUND_LOW_BEEP);
+     //PlayFile("Have A Nice Day.rso");
+     //PlayFile("Laughing 02.rso");
+     while (true) {
+           GraphicOut(28, LCD_LINE7, "faceopen.ric");
+           Wait(500);
+           GraphicOut(28, LCD_LINE7, "faceclosed.ric");
+           Wait(500);
+     }
+}

@@ -109,8 +109,7 @@ void Waller() {
            
            if (CurrentTick() - lLastSeen > 500) { // If we haven't seen the wall for a while,
                                                   // we've probably encountered a corner
-              PlayTone(2000, 300);
-              Wait(300);
+              PlaySound(SOUND_DOUBLE_BEEP);
               
               // Go straight to get some distance and make sure we'll make it around the corner
               OnFwdSync(OUT_AB, SpeedFastWall, 0);
@@ -131,6 +130,8 @@ void Waller() {
 
 task main() {
 
+     PlaySound(SOUND_UP);
+     
      // Initialize sensors
      SetSensorLight(IN_2);
      SetSensorLowspeed(IN_4);
@@ -138,13 +139,11 @@ task main() {
      
      Liner();
      
-     PlayTone(2000, 300);
-     Wait(300);
+     PlaySound(SOUND_DOUBLE_BEEP);
      
      Waller();
      
      Off(OUT_AB);
      
-     PlayTone(500, 800);
-     Wait(800);
+     PlaySound(SOUND_LOW_BEEP);
 }
