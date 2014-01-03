@@ -18,6 +18,14 @@
 #define waitPic 1000 // Time to show closed face before starting and exiting program
 #define animInterval 250 // Speed of the animation
 
+//////////////////////////////////////////////////////////////
+// TODO                                                     //
+//                                                          //
+// 1. Measure and adjust tolerance                          //
+// 2. Measure and adjust time between sharp turn and end    //
+//                                                          //
+//////////////////////////////////////////////////////////////
+
 int iLight = 0;
 int iDistance = 0;
 long lLastSeen = 0;
