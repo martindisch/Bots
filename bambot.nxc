@@ -1,14 +1,17 @@
 // Line following constants
-#define SpeedSlow 10
-#define SpeedFast 50 // Depends on how narrow the curves are, the narrower, the quicker
+#define SpeedSlow 10 // Speed of slower wheel in turn
+#define SpeedFast 50 // Speed of faster wheel in turn
 #define tolerance 40 // Value of the brightest spot on the line + some security margin (+5 is feasible)
 #define followSide false // True to follow right side of the line, false for left side
 #define timeTillTurn 500 // Time not on line until making a full turn
 
 // Wall following constants
 #define distance 30 // Desired distance to wall while following it
-#define SpeedSlowWall 10
-#define SpeedFastWall 50
+#define SpeedSlowWall 10 // Speed of slower wheel in turn
+#define SpeedFastWall 50 // Speed of faster wheel in turn
+#define timeTillTurnWall 500 // Time not seen wall to decide it's the sharp turn
+#define timeStraight 2000 // Time going straight after sharp turn
+#define timeTurn 500 // Time to turn right after going straight
 
 // General constants
 #define waitPic 1000 // Time to show motionless face
@@ -111,19 +114,19 @@ void Waller() {
            // Go right if too far away
            OnFwd(OUT_B, SpeedFastWall);
            OnFwd(OUT_A, SpeedSlowWall);
-           until (SensorUS(IN_4) < distance || CurrentTick() - lLastSeen > 500 || Sensor(IN_1) != 0);
+           until (SensorUS(IN_4) < distance || CurrentTick() - lLastSeen > timeTillTurnWall || Sensor(IN_1) != 0);
            
-           if (CurrentTick() - lLastSeen > 500) { // If we haven't seen the wall for a while,
-                                                  // we've probably encountered a corner
+           if (CurrentTick() - lLastSeen > timeTillTurnWall) { // If we haven't seen the wall for a while,
+                                                               // we've probably encountered a corner
               PlaySound(SOUND_DOUBLE_BEEP);
               
               // Go straight to get some distance and make sure we'll make it around the corner
               OnFwdSync(OUT_AB, SpeedFastWall, 0);
-              Wait(2000);
+              Wait(timeStraight);
               
               // Turn for some time
               OnFwdSync(OUT_AB, SpeedFastWall, 50);
-              Wait(500);
+              Wait(timeTurn);
               
               // Go slightly right until we're at the wall again
               OnFwdSync(OUT_AB, SpeedFastWall, 10);
