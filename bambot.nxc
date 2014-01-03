@@ -12,6 +12,7 @@
 int iLight = 0;
 int iDistance = 0;
 long lLastSeen = 0;
+bool bAnim = true;
 
 // Subroutine for following the line
 void followLine() {
@@ -128,22 +129,60 @@ void Waller() {
      }
 }
 
+//
+task anim() {
+     // Show open and closed face in short succession
+     while (bAnim) {
+           GraphicOut(28, LCD_LINE7, "faceopen.ric");
+           Wait(250);
+           GraphicOut(28, LCD_LINE7, "faceclosed.ric");
+           Wait(250);
+     }
+}
+
+// The main program
+task controller() {
+
+     // Start line following
+     Liner();
+
+     // When done, play sound and
+     PlaySound(SOUND_DOUBLE_BEEP);
+
+     // Start wall following
+     Waller();
+
+     // When done, stop motors immediately and
+     Off(OUT_AB);
+     
+     // stop the animation and display motionless face
+     bAnim = false;
+     GraphicOut(28, LCD_LINE7, "faceclosed.ric");
+     
+     // Play end sound
+     PlaySound(SOUND_LOW_BEEP);
+     
+     Wait(1000);
+
+     StopAllTasks();
+     
+     // Done
+     
+}
+
+// Main entry point to initialize sensors and start necessary tasks
 task main() {
 
+     // Make start sound and display motionless face for a short time
      PlaySound(SOUND_UP);
+     GraphicOut(28, LCD_LINE7, "faceclosed.ric");
+     Wait(1000);
      
      // Initialize sensors
      SetSensorLight(IN_2);
      SetSensorLowspeed(IN_4);
      SetSensorTouch(IN_1);
      
-     Liner();
-     
-     PlaySound(SOUND_DOUBLE_BEEP);
-     
-     Waller();
-     
-     Off(OUT_AB);
-     
-     PlaySound(SOUND_LOW_BEEP);
+     // Start animation and main program
+     Precedes(anim, controller);
 }
