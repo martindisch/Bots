@@ -10,8 +10,9 @@
 #define SpeedSlowWall 10 // Speed of slower wheel in turn
 #define SpeedFastWall 50 // Speed of faster wheel in turn
 #define timeTillTurnWall 500 // Time not seen wall to decide it's the sharp turn
-#define timeStraight 2000 // Time going straight after sharp turn
+#define timeStraight 3500 // Time going straight after sharp turn
 #define timeTurn 500 // Time to turn right after going straight
+#define endTime 14000 // Time after sharp turn (beep sound) to the end
 
 // General constants
 #define waitPic 1000 // Time to show closed face before starting and exiting program
@@ -68,7 +69,7 @@ void Liner() {
            iLight = Sensor(IN_2);
            iDistance = SensorUS(IN_4);
 
-           if (iDistance < distance ) { // Decide if we've hit the wall
+           if (iDistance < distance) { // Decide if we've hit the wall
               bWalled = true;
            }
 
@@ -98,28 +99,43 @@ void Liner() {
      }
 }
 
+// Subrouting for following the wall
+void followWall() {
+     // Go left if too close to wall
+     OnFwd(OUT_A, SpeedFastWall);
+     OnFwd(OUT_B, SpeedSlowWall);
+     until (SensorUS(IN_4) > distance || Sensor(IN_1) != 0);
+     lLastSeen = CurrentTick(); // Remember last time we've seen the line
+
+     // Go right if too far away from wall
+     OnFwd(OUT_B, SpeedFastWall);
+     OnFwd(OUT_A, SpeedSlowWall);
+     until (SensorUS(IN_4) < distance || CurrentTick() - lLastSeen > timeTillTurnWall || Sensor(IN_1) != 0);
+}
+
 // Wall follower
 void Waller() {
 
      // Initialize variables
      lLastSeen = CurrentTick();
+     long timeToEnd = 2147483647; // Max value for a long, to make sure we don't exit prematurely
      
-     while (Sensor(IN_1) == 0) { // Execute for as long as touch hasn't been activated
+     while (Sensor(IN_1) == 0 && CurrentTick() - timeToEnd < endTime) { // Execute for as long as touch hasn't been activated
      
            // Go left if too close to wall
            OnFwd(OUT_A, SpeedFastWall);
            OnFwd(OUT_B, SpeedSlowWall);
            until (SensorUS(IN_4) > distance || Sensor(IN_1) != 0);
+           OnFwdSync(OUT_AB, SpeedFastWall, 0);
+           Wait(250);
            lLastSeen = CurrentTick(); // Remember last time we've seen the line
            
-           // Go right if too far away from wall
-           OnFwd(OUT_B, SpeedFastWall);
-           OnFwd(OUT_A, SpeedSlowWall);
-           until (SensorUS(IN_4) < distance || CurrentTick() - lLastSeen > timeTillTurnWall || Sensor(IN_1) != 0);
+           followWall();
            
            if (CurrentTick() - lLastSeen > timeTillTurnWall) { // If we haven't seen the wall for a while,
                                                                // we've probably encountered a corner
               PlaySound(SOUND_DOUBLE_BEEP);
+              timeToEnd = CurrentTick(); // Start counting the time
               
               // Go straight to get some distance and make sure we'll make it around the corner
               OnFwdSync(OUT_AB, SpeedFastWall, 0);
