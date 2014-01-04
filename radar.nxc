@@ -1,0 +1,49 @@
+int matrix[10][10];
+
+task watcher() {
+     int dist = 0;
+     int rot = 0;
+     bool up = true;
+     
+     while (true) {
+           if (up) {
+              RotateMotorEx(OUT_A, 100, 6, 0, false, true);
+              rot += 6;
+              if (rot == 60) {
+                 up = false;
+              }
+           }
+           else {
+                RotateMotorEx(OUT_A, 100, -6, 0, false, true);
+                rot -= 6;
+                if (rot == 0) {
+                   up = true;
+                }
+           }
+           
+           dist = SensorUS(IN_4);
+           if (dist <= 100) {
+              dist = dist / 10;
+           }
+              
+     }
+}
+
+task display() {
+
+}
+
+void initMatrix() {
+     for (int x = 0; x < 10; x++) {
+         for (int y = 0; y < 10; y++) {
+             matrix[x][y] = 0;
+         }
+     }
+}
+
+task main() {
+     SetSensorLowspeed(IN_4);
+     initMatrix();
+     
+     Precedes(watcher, display);
+}
