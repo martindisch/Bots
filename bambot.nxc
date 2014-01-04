@@ -183,10 +183,11 @@ task controller() {
      // Start line following
      Liner();
 
-     // When done, play sound and
+     // When done, play sound and disable light sensor to save battery
      PlaySound(SOUND_DOUBLE_BEEP);
+     SetSensorType(IN_2, SENSOR_TYPE_NONE);
 
-     // start wall following
+     // Start wall following
      Waller();
 
      // When done, stop motors immediately and
