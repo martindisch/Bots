@@ -2,7 +2,7 @@
 #define SpeedSlow 10 // Speed of slower wheel in turn
 #define SpeedFast 50 // Speed of faster wheel in turn
 #define tolerance 40 // Value of the brightest spot on the line + some security margin (+5 is appropriate)
-#define followSide false // True to follow right side of the line, false for left side
+#define followRight false // True to follow right side of the line, false for left side
 #define timeTillTurn 500 // Time not on line until making a full turn
 
 // Wall following constants
@@ -34,7 +34,7 @@ bool bAnim = true;
 // Subroutine for following the line
 void followLine() {
 
-     if (followSide) { // Depends on which side of the wall we're following
+     if (followRight) { // Depends on which side of the wall we're following
      
         if (iLight > tolerance) { // If not on the line go left
         
@@ -86,7 +86,7 @@ void Liner() {
                                                            
               while (iLight > tolerance) { // Turn until we see the line again
               
-                    if (followSide) { // When following right side, turn hard right
+                    if (followRight) { // When following right side, turn hard right
                        OnFwdSync(OUT_AB, 50, 100);
                     }
                     else { // When following left side, turn hard left
