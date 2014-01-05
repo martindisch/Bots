@@ -1,9 +1,25 @@
+#define distance 30
+#define SpeedSlowWall 10 // Speed of slower wheel in turn
+#define SpeedFastWall 50 // Speed of faster wheel in turn
+
+void followWall() {
+     // Go left if too close to wall
+     OnFwd(OUT_B, SpeedFastWall);
+     OnFwd(OUT_C, SpeedSlowWall);
+     until (SensorUS(IN_4) > distance);
+
+     // Go right if too far away from wall
+     OnFwd(OUT_C, SpeedFastWall);
+     OnFwd(OUT_B, SpeedSlowWall);
+     until (SensorUS(IN_4) < distance);
+}
+
 task main() {
-     SetSensorLight(IN_2);
-     Wait(1000);
-     SetSensorType(IN_2, SENSOR_TYPE_NONE);
-     Wait(2000);
-     SetSensorLight(IN_2);
-     PlayTone(2000, 30000000);
-     until (Sensor(IN_2) < 40);
+     SetSensorLowspeed(IN_4);
+
+     while (true) {
+           //followWall();
+           RotateMotorEx(OUT_A, 50, 90, 0, false, true);
+           RotateMotorEx(OUT_A, 50, -90, 0, false, true);
+     }
 }
