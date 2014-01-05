@@ -34,13 +34,13 @@ bool bAnim = true;
 // Subroutine for following the line
 void followLine() {
 
-     if (followRight) { // Depends on which side of the wall we're following
-     
+     if (followRight) { // Depends on which side of the line we're following
+
         if (iLight > tolerance) { // If not on the line go left
-        
+
            OnFwd(OUT_B, SpeedFast);
            OnFwd(OUT_C, SpeedSlow);
-           
+
         }
         else {
              OnFwd(OUT_C, SpeedFast); // If on the line go right
@@ -50,10 +50,10 @@ void followLine() {
      }
      else {
           if (iLight > tolerance) { // If not on the line go right
-          
+
              OnFwd(OUT_B, SpeedSlow);
              OnFwd(OUT_C, SpeedFast);
-             
+
           }
           else {
                OnFwd(OUT_C, SpeedSlow); // If on the line go left
@@ -72,7 +72,7 @@ void Liner() {
 
      // Executing as long as we haven't hit the wall
      while (!bWalled) {
-     
+
            // Get current values
            iLight = Sensor(IN_2);
            iDistance = SensorUS(IN_4);
@@ -83,9 +83,9 @@ void Liner() {
 
            if (CurrentTick() - lLastSeen > timeTillTurn) { // If we haven't seen the line in a while,
                                                            // we've most likely run into a dead end
-                                                           
+
               while (iLight > tolerance) { // Turn until we see the line again
-              
+
                     if (followRight) { // When following right side, turn hard right
                        OnFwdSync(OUT_BC, 50, 100);
                     }
@@ -93,16 +93,16 @@ void Liner() {
                          OnFwdSync(OUT_BC, 50, -100);
                     }
                     iLight = Sensor(IN_2); // Get current value
-                    
+
               }
-              
+
               Off(OUT_BC);
               lLastSeen = CurrentTick(); // Remember last time we've seen the line
            }
            else { // If we're not in a dead end, follow the line as usual
-           
+
                 followLine();
-                
+
            }
      }
 }
@@ -113,7 +113,7 @@ void followWall() {
      OnFwd(OUT_B, SpeedFastWall);
      OnFwd(OUT_C, SpeedSlowWall);
      until (SensorUS(IN_4) > distance || Sensor(IN_1) != 0);
-     lLastSeen = CurrentTick(); // Remember last time we've seen the line
+     lLastSeen = CurrentTick(); // Remember last time we've seen the wall
 
      // Go right if too far away from wall
      OnFwd(OUT_C, SpeedFastWall);
@@ -127,40 +127,40 @@ void Waller() {
      // Make sure we're not too close to the wall
      OnFwdSync(OUT_BC, SpeedFastWall, -30);
      Wait(500);
-     
+
      // Initialize variables
      lLastSeen = CurrentTick();
      long timeToEnd = 2147483647; // Max value for a long, to make sure we don't exit prematurely
-     
+
      while (Sensor(IN_1) == 0 && CurrentTick() - timeToEnd < endTime) { // Execute for as long as touch hasn't been activated
-     
+
            // Go left if too close to wall
            OnFwd(OUT_B, SpeedFastWall);
            OnFwd(OUT_C, SpeedSlowWall);
            until (SensorUS(IN_4) > distance || Sensor(IN_1) != 0);
            OnFwdSync(OUT_BC, SpeedFastWall, 0);
            Wait(250);
-           lLastSeen = CurrentTick(); // Remember last time we've seen the line
-           
+           lLastSeen = CurrentTick(); // Remember last time we've seen the wall
+
            followWall();
-           
+
            if (CurrentTick() - lLastSeen > timeTillTurnWall) { // If we haven't seen the wall for a while,
                                                                // we've probably encountered a corner
               PlaySound(SOUND_DOUBLE_BEEP);
               timeToEnd = CurrentTick(); // Start counting the time
-              
+
               // Go straight to get some distance and make sure we'll make it around the corner
               OnFwdSync(OUT_BC, SpeedFastWall, 0);
               Wait(timeStraight);
-              
+
               // Turn for some time
               OnFwdSync(OUT_BC, SpeedFastWall, 50);
               Wait(timeTurn);
-              
+
               // Go slightly right until we're at the wall again
               OnFwdSync(OUT_BC, SpeedFastWall, 10);
               until (SensorUS(IN_4) < distance || Sensor(IN_1) != 0);
-              
+
               Off(OUT_BC);
            }
      }
@@ -192,20 +192,20 @@ task controller() {
 
      // When done, stop motors immediately and
      Off(OUT_BC);
-     
+
      // stop the animation and display closed face
      bAnim = false;
      GraphicOut(28, LCD_LINE7, "faceclosed.ric");
-     
+
      // Play end sound
      PlaySound(SOUND_LOW_BEEP);
-     
+
      Wait(waitPic);
 
      StopAllTasks();
-     
+
      // Done
-     
+
 }
 
 // Main entry point to initialize sensors and start necessary tasks
@@ -215,12 +215,12 @@ task main() {
      PlaySound(SOUND_UP);
      GraphicOut(28, LCD_LINE7, "faceclosed.ric");
      Wait(waitPic);
-     
+
      // Initialize sensors
      SetSensorLight(IN_2);
      SetSensorLowspeed(IN_4);
      SetSensorTouch(IN_1);
-     
+
      // Start animation and main program
      Precedes(anim, controller);
 }
